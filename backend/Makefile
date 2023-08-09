@@ -8,14 +8,11 @@ style:
 	isort .
 	flake8 .
 
-shell:
-	$(MANAGE) shell
+super:
+	$(MANAGE) createsuperuser
 
-testp:
-	$(MANAGE) test posts
+makemig:
+	$(MANAGE) makemigrations
 
-testa:
-	$(MANAGE) test about
-
-testu:
-	$(MANAGE) test users
+mig:
+	$(MANAGE) migrate

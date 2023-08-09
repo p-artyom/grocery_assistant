@@ -10,5 +10,6 @@ from api.views import (
 
 urlpatterns = [
     # path('', include(router.urls)),
-    path('tags/', TagAPIView.as_view(), name='get_tags')
+    path('tags/', TagAPIView.as_view(), name='get_tags'),
+    path('', include('users.urls')),
 ]
