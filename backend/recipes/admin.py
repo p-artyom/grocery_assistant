@@ -20,7 +20,16 @@ class IngredientAdmin(BaseAdmin):
 
 @admin.register(Recipe)
 class RecipeAdmin(BaseAdmin):
-    list_display = ('pk', 'name', 'author', 'text', 'image', 'cooking_time')
+    list_display = (
+        'pk',
+        'name',
+        'author',
+        'text',
+        'image',
+        'cooking_time',
+        'created',
+        'modified',
+    )
     list_filter = (
         'author',
         'name',
