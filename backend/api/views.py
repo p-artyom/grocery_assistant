@@ -1,14 +1,14 @@
 from rest_framework import filters
 
+from api.mixins import CRUDAPIView, ListRetrieveAPIView
 from api.serializers import (
-    TagSerializer,
     IngredientSerializer,
-    RecipeSerializer,
     RecipeReadOnlySerializer,
+    RecipeSerializer,
+    TagSerializer,
 )
-from api.mixins import ListRetrieveAPIView, CRUDAPIView
-from recipes.models import Tag, Ingredient, Recipe, IngredientInRecipe
-from core.paginations import RecipesPagination
+from core.paginations import RecipePagination
+from recipes.models import Ingredient, Recipe, Tag
 
 
 class TagAPIView(ListRetrieveAPIView):
@@ -23,9 +23,9 @@ class IngredientAPIView(ListRetrieveAPIView):
     search_fields = ('^name',)
 
 
-class RecipesAPIView(CRUDAPIView):
+class RecipeAPIView(CRUDAPIView):
     queryset = Recipe.objects.all()
-    pagination_class = RecipesPagination
+    pagination_class = RecipePagination
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)

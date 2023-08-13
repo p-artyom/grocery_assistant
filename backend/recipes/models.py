@@ -64,7 +64,7 @@ class Recipe(NameModel, Timestamped):
     )
     image = models.ImageField(
         'картинка',
-        upload_to='recipes/',
+        upload_to='recipes/images/',
         help_text='Выберите картинку',
     )
     text = models.TextField(
@@ -100,6 +100,7 @@ class Recipe(NameModel, Timestamped):
 class IngredientInRecipe(models.Model):
     recipe = models.ForeignKey(
         Recipe,
+        related_name='ingredient_in_recipe',
         on_delete=models.CASCADE,
         verbose_name='рецепт',
         help_text='Выберите рецепт',
@@ -119,6 +120,12 @@ class IngredientInRecipe(models.Model):
     class Meta:
         verbose_name = 'ингредиент в рецепт'
         verbose_name_plural = 'ингредиенты в рецептах'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['recipe', 'ingredient'],
+                name='unique_ingredients',
+            ),
+        ]
 
     def __str__(self):
         return f'{self.recipe} {self.ingredient}'

@@ -1,5 +1,5 @@
 from rest_framework.pagination import PageNumberPagination
 
 
-class RecipesPagination(PageNumberPagination):
+class RecipePagination(PageNumberPagination):
     page_size = 6
