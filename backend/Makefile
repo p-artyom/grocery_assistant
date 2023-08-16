@@ -16,3 +16,6 @@ makemig:
 
 mig:
 	$(MANAGE) migrate
+
+import:
+	$(MANAGE) importcsv

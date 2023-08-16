@@ -14,7 +14,7 @@ class TagAdmin(BaseAdmin):
 @admin.register(Ingredient)
 class IngredientAdmin(BaseAdmin):
     list_display = ('pk', 'name', 'measurement_unit')
-    list_filter = ('name',)
+    # list_filter = ('name',)
     search_fields = ('name',)
 
 

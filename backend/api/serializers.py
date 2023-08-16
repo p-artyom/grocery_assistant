@@ -81,18 +81,28 @@ class RecipeSerializer(serializers.ModelSerializer):
             'modified',
         )
 
+    def add_tags_and_ingredients(self, tags, ingredients, model):
+        model.tags.set(tags)
+        for ingredient in ingredients:
+            IngredientInRecipe.objects.update_or_create(
+                recipe=model,
+                ingredient=ingredient['id'],
+                amount=ingredient['amount'],
+            )
+
     def create(self, validated_data):
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredients')
         recipe = Recipe.objects.create(**validated_data)
-        recipe.tags.set(tags)
-        for ingredient in ingredients:
-            IngredientInRecipe.objects.create(
-                recipe=recipe,
-                ingredient=ingredient['id'],
-                amount=ingredient['amount'],
-            )
+        self.add_tags_and_ingredients(tags, ingredients, recipe)
         return recipe
+
+    def update(self, instance, validated_data):
+        tags = validated_data.pop('tags')
+        ingredients = validated_data.pop('ingredients')
+        instance.ingredients.clear()
+        self.add_tags_and_ingredients(tags, ingredients, instance)
+        return super().update(instance, validated_data)
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
