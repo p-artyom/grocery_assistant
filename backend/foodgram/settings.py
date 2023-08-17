@@ -129,3 +129,13 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ],
 }
+
+AUTH_USER_MODEL = 'users.User'
+
+DJOSER = {
+    'LOFIN_FIELD': 'email',
+    'SERIALIZERS': {
+        'user': 'users.serializers.SpecialUserSerializer',
+        'current_user': 'users.serializers.SpecialUserSerializer',
+    },
+}

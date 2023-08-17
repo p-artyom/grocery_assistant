@@ -1,12 +1,14 @@
 from behaviors.behaviors import Timestamped
-from django.contrib.auth import get_user_model
+from django.conf import settings
+
+# from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
 from django.db import models
 
 from core.models import NameModel
 from core.utils import cut_string
 
-User = get_user_model()
+# User = get_user_model()
 
 
 class Tag(models.Model):
@@ -58,7 +60,8 @@ class Recipe(NameModel, Timestamped):
         help_text='Выберите теги',
     )
     author = models.ForeignKey(
-        User,
+        # User,
+        settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         verbose_name='автор',
     )

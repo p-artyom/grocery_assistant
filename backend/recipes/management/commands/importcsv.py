@@ -12,7 +12,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         del args, options
         file_path = settings.BASE_DIR / 'static' / 'data'
-        with open(file_path / 'tags.csv') as csv_file:
+        with open(file_path / 'tags.csv', encoding='utf-8') as csv_file:
             reader_object = csv.reader(csv_file)
             for row in reader_object:
                 if not Tag.objects.filter(slug=row[2]).exists():
@@ -22,7 +22,7 @@ class Command(BaseCommand):
                         slug=row[2],
                     )
             print('Данные тегов загружены в БД!')
-        with open(file_path / 'ingredients.csv') as csv_file:
+        with open(file_path / 'ingredients.csv', encoding='utf-8') as csv_file:
             reader_object = csv.reader(csv_file)
             for row in reader_object:
                 if not Ingredient.objects.filter(name=row[0]).exists():
