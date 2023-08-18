@@ -1,14 +1,10 @@
 from behaviors.behaviors import Timestamped
-from django.conf import settings
-
-# from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
 from django.db import models
 
 from core.models import NameModel
 from core.utils import cut_string
-
-# User = get_user_model()
+from users.models import User
 
 
 class Tag(models.Model):
@@ -60,10 +56,10 @@ class Recipe(NameModel, Timestamped):
         help_text='Выберите теги',
     )
     author = models.ForeignKey(
-        # User,
-        settings.AUTH_USER_MODEL,
+        User,
         on_delete=models.CASCADE,
         verbose_name='автор',
+        help_text='Выберите автора',
     )
     image = models.ImageField(
         'картинка',
@@ -132,3 +128,25 @@ class IngredientInRecipe(models.Model):
 
     def __str__(self):
         return f'{self.recipe} {self.ingredient}'
+
+
+class Favorite(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        verbose_name='пользователь',
+        help_text='Выберите пользователя, который добавляет в избранное',
+    )
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        verbose_name='рецепт',
+        help_text='Выберите рецепт',
+    )
+
+    class Meta:
+        verbose_name = 'избранное'
+        verbose_name_plural = 'избранное'
+
+    def __str__(self) -> str:
+        return f'`{self.user}` добавил в избранное `{self.recipe}`'

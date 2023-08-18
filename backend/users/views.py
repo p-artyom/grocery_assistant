@@ -26,9 +26,9 @@ class SpecialUserViewSet(UserViewSet):
     def subscribe(self, request, id):
         user = request.user
         following = get_object_or_404(User, id=id)
-        subscription = Subscribe.objects.filter(user=user, following=following)
+        subscribe = Subscribe.objects.filter(user=user, following=following)
         if request.method == 'POST':
-            if subscription.exists():
+            if subscribe.exists():
                 return Response(
                     {'error': 'Нельзя подписаться повторно на одного автора!'},
                     status=status.HTTP_400_BAD_REQUEST,
@@ -41,12 +41,12 @@ class SpecialUserViewSet(UserViewSet):
             serializer = SubscribeSerializer(
                 following,
                 context={'request': request},
-            )
+            ).data
             Subscribe.objects.create(user=user, following=following)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer, status=status.HTTP_201_CREATED)
         if request.method == 'DELETE':
-            if subscription.exists():
-                subscription.delete()
+            if subscribe.exists():
+                subscribe.delete()
                 return Response(status=status.HTTP_204_NO_CONTENT)
             return Response(
                 {'error': 'Вы не подписаны на этого автора!'},
@@ -55,12 +55,11 @@ class SpecialUserViewSet(UserViewSet):
 
     @action(detail=False, permission_classes=[IsAuthenticated])
     def subscriptions(self, request):
-        user = request.user
-        following = User.objects.filter(following__user=user)
-        page = self.paginate_queryset(following)
-        serializer = SubscribeSerializer(
-            page,
+        subscriptions = SubscribeSerializer(
+            self.paginate_queryset(
+                User.objects.filter(following__user=request.user),
+            ),
             many=True,
             context={'request': request},
-        )
-        return self.get_paginated_response(serializer.data)
+        ).data
+        return self.get_paginated_response(subscriptions)

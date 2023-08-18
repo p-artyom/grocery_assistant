@@ -3,9 +3,17 @@ from django.db import models
 
 
 class User(AbstractUser):
-    email = models.EmailField('Email', unique=True)
-    first_name = models.CharField('Имя', max_length=150)
-    last_name = models.CharField('Фамилия', max_length=150)
+    email = models.EmailField('Email', unique=True, help_text='Введите Email')
+    first_name = models.CharField(
+        'Имя',
+        max_length=150,
+        help_text='Введите имя',
+    )
+    last_name = models.CharField(
+        'Фамилия',
+        max_length=150,
+        help_text='Введите фамилию',
+    )
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = [
@@ -18,20 +26,23 @@ class User(AbstractUser):
     class Meta:
         verbose_name = 'пользователь'
         verbose_name_plural = 'пользователи'
+        ordering = ('-id',)
 
 
 class Subscribe(models.Model):
     user = models.ForeignKey(
         User,
+        related_name='follower',
         on_delete=models.CASCADE,
         verbose_name='пользователь',
-        related_name='follower',
+        help_text='Введите пользователя, который оформляет подписку',
     )
     following = models.ForeignKey(
         User,
+        related_name='following',
         on_delete=models.CASCADE,
         verbose_name='автор',
-        related_name='following',
+        help_text='Введите пользователя, на которого нужно оформить подписку',
     )
 
     class Meta:

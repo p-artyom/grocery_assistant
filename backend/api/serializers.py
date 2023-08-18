@@ -2,8 +2,15 @@ import base64
 
 from django.core.files.base import ContentFile
 from rest_framework import serializers
+from rest_framework.fields import SerializerMethodField
 
-from recipes.models import Ingredient, IngredientInRecipe, Recipe, Tag
+from recipes.models import (
+    Favorite,
+    Ingredient,
+    IngredientInRecipe,
+    Recipe,
+    Tag,
+)
 
 
 class Base64ImageField(serializers.ImageField):
@@ -61,6 +68,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         read_only=True,
     )
     ingredients = IngredientInRecipeSerializer(many=True, write_only=True)
+    is_favorited = SerializerMethodField(read_only=True)
     image = Base64ImageField(required=False)
 
     class Meta:
@@ -70,6 +78,7 @@ class RecipeSerializer(serializers.ModelSerializer):
             'tags',
             'author',
             'ingredients',
+            'is_favorited',
             'name',
             'image',
             'text',
@@ -80,6 +89,15 @@ class RecipeSerializer(serializers.ModelSerializer):
             'created',
             'modified',
         )
+
+    def get_is_favorited(self, object):
+        user = self.context.get('request').user
+        if user.is_anonymous:
+            return False
+        return Favorite.objects.filter(
+            user=user,
+            recipe=object.id,
+        ).exists()
 
     def add_tags_and_ingredients(self, tags, ingredients, model):
         model.tags.set(tags)
@@ -128,6 +146,7 @@ class RecipeReadOnlySerializer(serializers.ModelSerializer):
         source='ingredient_in_recipe',
         read_only=True,
     )
+    is_favorited = SerializerMethodField(read_only=True)
     image = Base64ImageField()
 
     class Meta:
@@ -137,6 +156,7 @@ class RecipeReadOnlySerializer(serializers.ModelSerializer):
             'tags',
             'author',
             'ingredients',
+            'is_favorited',
             'name',
             'image',
             'text',
@@ -146,4 +166,24 @@ class RecipeReadOnlySerializer(serializers.ModelSerializer):
             'author',
             'created',
             'modified',
+        )
+
+    def get_is_favorited(self, object):
+        user = self.context.get('request').user
+        if user.is_anonymous:
+            return False
+        return Favorite.objects.filter(
+            user=user,
+            recipe=object.id,
+        ).exists()
+
+
+class RecipeInActionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Recipe
+        fields = (
+            'id',
+            'name',
+            'image',
+            'cooking_time',
         )

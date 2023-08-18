@@ -1,7 +1,13 @@
 from django.contrib import admin
 
 from core.admin import BaseAdmin
-from recipes.models import Ingredient, IngredientInRecipe, Recipe, Tag
+from recipes.models import (
+    Favorite,
+    Ingredient,
+    IngredientInRecipe,
+    Recipe,
+    Tag,
+)
 
 
 @admin.register(Tag)
@@ -49,3 +55,9 @@ class IngredientInRecipeAdmin(BaseAdmin):
         'recipe',
         'ingredient',
     )
+
+
+@admin.register(Favorite)
+class FavoriteAdmin(BaseAdmin):
+    list_display = ('pk', '__str__')
+    search_fields = ('user',)

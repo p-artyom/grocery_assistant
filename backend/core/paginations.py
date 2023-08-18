@@ -5,5 +5,5 @@ class RecipePagination(PageNumberPagination):
     page_size = 6
 
 
-class LimitPagination(PageNumberPagination):
+class LimitPagination(RecipePagination):
     page_size_query_param = 'limit'
