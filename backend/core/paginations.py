@@ -1,9 +1,6 @@
 from rest_framework.pagination import PageNumberPagination
 
 
-class RecipePagination(PageNumberPagination):
+class LimitPagination(PageNumberPagination):
     page_size = 6
-
-
-class LimitPagination(RecipePagination):
     page_size_query_param = 'limit'

@@ -1,7 +1,7 @@
 from djoser.serializers import UserSerializer
 from rest_framework.fields import SerializerMethodField
 
-from api.serializers import RecipeInActionSerializer
+from api import serializers
 from recipes.models import Recipe
 from users.models import Subscribe, User
 
@@ -44,12 +44,16 @@ class SubscribeSerializer(SpecialUserSerializer):
             'recipes_count',
         )
 
+    def get_is_subscribed(self, object):
+        del object
+        return True
+
     def get_recipes(self, object):
         recipes = Recipe.objects.filter(author=object)
         recipes_limit = self.context.get('request').GET.get('recipes_limit')
         if recipes_limit:
             recipes = recipes[: int(recipes_limit)]
-        recipes = RecipeInActionSerializer(
+        recipes = serializers.RecipeInActionSerializer(
             recipes,
             many=True,
         ).data

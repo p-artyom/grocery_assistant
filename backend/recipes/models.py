@@ -135,7 +135,8 @@ class Favorite(models.Model):
         User,
         on_delete=models.CASCADE,
         verbose_name='пользователь',
-        help_text='Выберите пользователя, который добавляет в избранное',
+        help_text='Выберите пользователя, который добавляет'
+        ' рецепт в избранное',
     )
     recipe = models.ForeignKey(
         Recipe,
@@ -150,3 +151,26 @@ class Favorite(models.Model):
 
     def __str__(self) -> str:
         return f'`{self.user}` добавил в избранное `{self.recipe}`'
+
+
+class ShoppingCart(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        verbose_name='пользователь',
+        help_text='Выберите пользователя, который добавляет'
+        ' рецепт в список покупок',
+    )
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        verbose_name='рецепт',
+        help_text='Выберите рецепт',
+    )
+
+    class Meta:
+        verbose_name = 'список покупок'
+        verbose_name_plural = 'список покупок'
+
+    def __str__(self) -> str:
+        return f'`{self.user}` добавил в список покупок `{self.recipe}`'

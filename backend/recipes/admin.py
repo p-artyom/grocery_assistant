@@ -6,6 +6,7 @@ from recipes.models import (
     Ingredient,
     IngredientInRecipe,
     Recipe,
+    ShoppingCart,
     Tag,
 )
 
@@ -20,7 +21,6 @@ class TagAdmin(BaseAdmin):
 @admin.register(Ingredient)
 class IngredientAdmin(BaseAdmin):
     list_display = ('pk', 'name', 'measurement_unit')
-    # list_filter = ('name',)
     search_fields = ('name',)
 
 
@@ -59,5 +59,11 @@ class IngredientInRecipeAdmin(BaseAdmin):
 
 @admin.register(Favorite)
 class FavoriteAdmin(BaseAdmin):
+    list_display = ('pk', '__str__')
+    search_fields = ('user',)
+
+
+@admin.register(ShoppingCart)
+class ShoppingCartAdmin(BaseAdmin):
     list_display = ('pk', '__str__')
     search_fields = ('user',)

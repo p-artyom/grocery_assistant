@@ -4,13 +4,9 @@ from django.core.files.base import ContentFile
 from rest_framework import serializers
 from rest_framework.fields import SerializerMethodField
 
-from recipes.models import (
-    Favorite,
-    Ingredient,
-    IngredientInRecipe,
-    Recipe,
-    Tag,
-)
+from core.utils import check_favorites, check_is_in_shopping_cart
+from recipes.models import Ingredient, IngredientInRecipe, Recipe, Tag
+from users.serializers import SpecialUserSerializer
 
 
 class Base64ImageField(serializers.ImageField):
@@ -63,12 +59,10 @@ class RecipeSerializer(serializers.ModelSerializer):
         queryset=Tag.objects.all(),
         many=True,
     )
-    author = serializers.SlugRelatedField(
-        slug_field='username',
-        read_only=True,
-    )
+    author = SpecialUserSerializer(read_only=True)
     ingredients = IngredientInRecipeSerializer(many=True, write_only=True)
     is_favorited = SerializerMethodField(read_only=True)
+    is_in_shopping_cart = SerializerMethodField(read_only=True)
     image = Base64ImageField(required=False)
 
     class Meta:
@@ -79,6 +73,7 @@ class RecipeSerializer(serializers.ModelSerializer):
             'author',
             'ingredients',
             'is_favorited',
+            'is_in_shopping_cart',
             'name',
             'image',
             'text',
@@ -91,13 +86,13 @@ class RecipeSerializer(serializers.ModelSerializer):
         )
 
     def get_is_favorited(self, object):
-        user = self.context.get('request').user
-        if user.is_anonymous:
-            return False
-        return Favorite.objects.filter(
-            user=user,
-            recipe=object.id,
-        ).exists()
+        return check_favorites(self.context.get('request').user, object)
+
+    def get_is_in_shopping_cart(self, object):
+        return check_is_in_shopping_cart(
+            self.context.get('request').user,
+            object,
+        )
 
     def add_tags_and_ingredients(self, tags, ingredients, model):
         model.tags.set(tags)
@@ -137,16 +132,14 @@ class RecipeSerializer(serializers.ModelSerializer):
 
 class RecipeReadOnlySerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
-    author = serializers.SlugRelatedField(
-        slug_field='username',
-        read_only=True,
-    )
+    author = SpecialUserSerializer(read_only=True)
     ingredients = RepresentationIngredientSerializer(
         many=True,
         source='ingredient_in_recipe',
         read_only=True,
     )
     is_favorited = SerializerMethodField(read_only=True)
+    is_in_shopping_cart = SerializerMethodField(read_only=True)
     image = Base64ImageField()
 
     class Meta:
@@ -157,6 +150,7 @@ class RecipeReadOnlySerializer(serializers.ModelSerializer):
             'author',
             'ingredients',
             'is_favorited',
+            'is_in_shopping_cart',
             'name',
             'image',
             'text',
@@ -169,13 +163,13 @@ class RecipeReadOnlySerializer(serializers.ModelSerializer):
         )
 
     def get_is_favorited(self, object):
-        user = self.context.get('request').user
-        if user.is_anonymous:
-            return False
-        return Favorite.objects.filter(
-            user=user,
-            recipe=object.id,
-        ).exists()
+        return check_favorites(self.context.get('request').user, object)
+
+    def get_is_in_shopping_cart(self, object):
+        return check_is_in_shopping_cart(
+            self.context.get('request').user,
+            object,
+        )
 
 
 class RecipeInActionSerializer(serializers.ModelSerializer):
