@@ -35,13 +35,20 @@ class RecipeAdmin(BaseAdmin):
         'cooking_time',
         'created',
         'modified',
+        'in_favorited',
     )
     list_filter = (
         'author',
         'name',
         'tags',
     )
+    readonly_fields = ('in_favorited',)
     search_fields = ('name',)
+
+    def in_favorited(self, object):
+        return Favorite.objects.filter(recipe=object).count()
+
+    in_favorited.short_description = 'число добавлений в избранное'
 
 
 @admin.register(IngredientInRecipe)

@@ -1,9 +1,17 @@
-from django.db.models import Q
+import csv
+from functools import reduce
+from operator import or_
+
+from django.db.models import Q, Sum
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, status
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import (
+    IsAuthenticated,
+    IsAuthenticatedOrReadOnly,
+)
 from rest_framework.response import Response
 
 from api.mixins import CRUDAPIView, ListRetrieveAPIView
@@ -16,7 +24,14 @@ from api.serializers import (
     TagSerializer,
 )
 from core.paginations import LimitPagination
-from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
+from recipes.models import (
+    Favorite,
+    Ingredient,
+    IngredientInRecipe,
+    Recipe,
+    ShoppingCart,
+    Tag,
+)
 
 
 class TagAPIView(ListRetrieveAPIView):
@@ -73,9 +88,11 @@ class RecipeAPIView(CRUDAPIView):
                         ~Q(shoppingcart__user=self.request.user),
                     )
                 )
-            tags = self.request.query_params.get('tags')
-            if tags is not None:
-                queryset = queryset.filter(tags__slug=tags)
+            tags = self.request.query_params.getlist('tags')
+            if tags:
+                queryset = queryset.filter(
+                    reduce(or_, [Q(tags__slug=tag) for tag in tags]),
+                ).distinct()
         return queryset
 
     @action(
@@ -139,9 +156,36 @@ class RecipeAPIView(CRUDAPIView):
     @action(
         methods=['GET'],
         detail=False,
+        permission_classes=[IsAuthenticated],
     )
     def download_shopping_cart(self, request):
-        return Response(
-            {'error': 'Работаем над этим!'},
-            status=status.HTTP_400_BAD_REQUEST,
+        user = request.user
+        recipe = ShoppingCart.objects.filter(user=user).values('recipe')
+        if not recipe.exists():
+            return Response(
+                {'error': 'Список покупок пуст!'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        ingredients = (
+            IngredientInRecipe.objects.filter(
+                recipe__in=recipe,
+            )
+            .values('ingredient__name', 'ingredient__measurement_unit')
+            .annotate(total=Sum('amount'))
         )
+        response = HttpResponse(content_type='text/csv')
+        response[
+            'Content-Disposition'
+        ] = 'attachment; filename=shopping_cart.csv'
+        writer = csv.writer(response)
+        writer.writerow(['Ингредиент', 'Количество', 'Единица измерения'])
+        for ingredient in ingredients:
+            print(ingredient)
+            _ = writer.writerow(
+                [
+                    ingredient['ingredient__name'],
+                    ingredient['total'],
+                    ingredient['ingredient__measurement_unit'],
+                ],
+            )
+        return response

@@ -7,7 +7,7 @@ from users.models import Subscribe, User
 @admin.register(User)
 class UserAdmin(BaseAdmin):
     list_display = ('pk', 'email', 'username', 'first_name', 'last_name')
-    list_filter = ('username',)
+    list_filter = ('first_name', 'email')
     search_fields = ('username',)
 
 

@@ -19,3 +19,6 @@ mig:
 
 import:
 	$(MANAGE) importcsv
+
+test:
+	$(MANAGE) test

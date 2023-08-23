@@ -7,13 +7,7 @@ from core.utils import cut_string
 from users.models import User
 
 
-class Tag(models.Model):
-    name = models.CharField(
-        'название',
-        max_length=200,
-        unique=True,
-        help_text='Введите название',
-    )
+class Tag(NameModel):
     color = models.CharField(
         'цвет в HEX',
         max_length=7,
@@ -127,7 +121,7 @@ class IngredientInRecipe(models.Model):
         ]
 
     def __str__(self):
-        return f'{self.recipe} {self.ingredient}'
+        return f'Рецепт `{self.recipe}` содержит `{self.ingredient}`'
 
 
 class Favorite(models.Model):
