@@ -3,14 +3,14 @@ from django.db import models
 
 
 class User(AbstractUser):
-    email = models.EmailField('Email', unique=True, help_text='Введите Email')
+    email = models.EmailField('email', unique=True, help_text='Введите Email')
     first_name = models.CharField(
-        'Имя',
+        'имя',
         max_length=150,
         help_text='Введите имя',
     )
     last_name = models.CharField(
-        'Фамилия',
+        'фамилия',
         max_length=150,
         help_text='Введите фамилию',
     )
@@ -27,6 +27,9 @@ class User(AbstractUser):
         verbose_name = 'пользователь'
         verbose_name_plural = 'пользователи'
         ordering = ('-id',)
+
+    def __str__(self) -> str:
+        return f'Создан пользователь `{self.email}`'
 
 
 class Subscribe(models.Model):

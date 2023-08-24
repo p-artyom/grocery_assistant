@@ -96,7 +96,7 @@ class RecipeAPIView(CRUDAPIView):
         return queryset
 
     @action(
-        methods=['POST', 'DELETE'],
+        methods=('POST', 'DELETE'),
         detail=True,
     )
     def favorite(self, request, pk):
@@ -125,7 +125,7 @@ class RecipeAPIView(CRUDAPIView):
             )
 
     @action(
-        methods=['POST', 'DELETE'],
+        methods=('POST', 'DELETE'),
         detail=True,
     )
     def shopping_cart(self, request, pk):
@@ -154,9 +154,9 @@ class RecipeAPIView(CRUDAPIView):
             )
 
     @action(
-        methods=['GET'],
+        methods=('GET',),
         detail=False,
-        permission_classes=[IsAuthenticated],
+        permission_classes=(IsAuthenticated,),
     )
     def download_shopping_cart(self, request):
         user = request.user
@@ -180,7 +180,6 @@ class RecipeAPIView(CRUDAPIView):
         writer = csv.writer(response)
         writer.writerow(['Ингредиент', 'Количество', 'Единица измерения'])
         for ingredient in ingredients:
-            print(ingredient)
             _ = writer.writerow(
                 [
                     ingredient['ingredient__name'],

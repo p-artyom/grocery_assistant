@@ -2,10 +2,7 @@ from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.permissions import (
-    IsAuthenticated,
-    IsAuthenticatedOrReadOnly,
-)
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from core.paginations import LimitPagination
@@ -16,11 +13,11 @@ from users.serializers import SpecialUserSerializer, SubscribeSerializer
 class SpecialUserViewSet(UserViewSet):
     queryset = User.objects.all()
     serializer_class = SpecialUserSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly,)
+    permission_classes = (IsAuthenticated,)
     pagination_class = LimitPagination
 
     @action(
-        methods=['POST', 'DELETE'],
+        methods=('POST', 'DELETE'),
         detail=True,
     )
     def subscribe(self, request, id):
@@ -53,7 +50,7 @@ class SpecialUserViewSet(UserViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-    @action(detail=False, permission_classes=[IsAuthenticated])
+    @action(detail=False, permission_classes=(IsAuthenticated,))
     def subscriptions(self, request):
         subscriptions = SubscribeSerializer(
             self.paginate_queryset(

@@ -147,10 +147,16 @@ class RecipesModelsTests(TestCase):
                 )
 
 
+@override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
 class IngredientsInRecipesModelsTests(TestCase):
     @classmethod
     def setUpTestData(cls) -> None:
         cls.ingredient_in_recipe = mixer.blend('recipes.IngredientInRecipe')
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        super().tearDownClass()
+        shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
 
     def test_ingredient_in_recipe_correct_def_str(self) -> None:
         """
@@ -197,10 +203,16 @@ class IngredientsInRecipesModelsTests(TestCase):
                 )
 
 
+@override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
 class FavoritsModelsTests(TestCase):
     @classmethod
     def setUpTestData(cls) -> None:
         cls.favorite = mixer.blend('recipes.Favorite')
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        super().tearDownClass()
+        shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
 
     def test_favorite_correct_def_str(self) -> None:
         """Проверяем, что у модели Favorite корректно работает __str__."""
@@ -241,10 +253,16 @@ class FavoritsModelsTests(TestCase):
                 )
 
 
+@override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
 class ShoppingCartsModelsTests(TestCase):
     @classmethod
     def setUpTestData(cls) -> None:
         cls.shopping_cart = mixer.blend('recipes.ShoppingCart')
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        super().tearDownClass()
+        shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
 
     def test_shopping_cart_correct_def_str(self) -> None:
         """Проверяем, что у модели ShoppingCart корректно работает __str__."""

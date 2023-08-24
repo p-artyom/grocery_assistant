@@ -3,7 +3,6 @@ import tempfile
 from http import HTTPStatus
 
 from django.conf import settings
-from django.contrib.auth import get_user
 from django.test import TestCase, override_settings
 from mixer.backend.django import mixer
 from rest_framework.test import APIClient
@@ -18,6 +17,7 @@ class RecipesUrlsTests(TestCase):
     @classmethod
     def setUpTestData(cls) -> None:
         cls.user, cls.author = mixer.cycle(2).blend(User)
+
         cls.tag = mixer.blend('recipes.Tag')
         cls.ingredient = mixer.blend('recipes.Ingredient')
         cls.recipe = mixer.blend(
@@ -25,6 +25,29 @@ class RecipesUrlsTests(TestCase):
             tags=cls.tag,
             author=cls.author,
             ingredients=cls.ingredient,
+        )
+        cls.shopping_cart = mixer.blend(
+            'recipes.ShoppingCart',
+            user=cls.author,
+            recipe=cls.recipe,
+        )
+        cls.favorite = mixer.blend(
+            'recipes.Favorite',
+            user=cls.author,
+            recipe=cls.recipe,
+        )
+
+        cls.cooking_time = 15
+        cls.amount = 10
+        cls.name = 'Карамельный латте'
+        cls.updated_name = 'Латте с корицей'
+        cls.text = 'Кофе с пеной взбитых сливок и ароматом карамели'
+        cls.updated_text = 'Кофе и корица - отличное сочетание'
+        cls.image = (
+            'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAA'
+            'ABAgMAAABieywaAAAACVBMVEUAAAD///9fX1/S0ecCAAAACXBIWX'
+            'MAAA7EAAAOxAGVKw4bAAAACklEQVQImWNoAAAAggCByxOyYQAAAA'
+            'BJRU5ErkJggg=='
         )
 
     @classmethod
@@ -39,14 +62,17 @@ class RecipesUrlsTests(TestCase):
 
         cls.urls = {
             'tags': '/api/tags/',
-            'first_tag': '/api/tags/1/',
-            'second_tag': '/api/tags/2/',
+            'tag': f'/api/tags/{cls.tag.id}/',
+            'unknown_tag': '/api/tags/99/',
             'ingredients': '/api/ingredients/',
-            'first_ingredient': '/api/ingredients/1/',
-            'second_ingredient': '/api/ingredients/2/',
+            'ingredient': f'/api/ingredients/{cls.ingredient.id}/',
+            'unknown_ingredient': '/api/ingredients/99/',
             'recipes': '/api/recipes/',
-            'first_recipe': '/api/recipes/1/',
-            'second_recipe': '/api/recipes/2/',
+            'recipe': f'/api/recipes/{cls.recipe.id}/',
+            'unknown_recipe': '/api/recipes/99/',
+            'download': '/api/recipes/download_shopping_cart/',
+            'shoping_cart': f'/api/recipes/{cls.recipe.id}/shopping_cart/',
+            'favorite': f'/api/recipes/{cls.recipe.id}/favorite/',
         }
 
     @classmethod
@@ -56,36 +82,42 @@ class RecipesUrlsTests(TestCase):
 
     def test_http_statuses_get_request(self) -> None:
         """URL-адрес возвращает соответствующий статус при GET запросах."""
-        url_status_user = (
+        urls_statuses_users = (
             (self.urls.get('tags'), HTTPStatus.OK, self.client),
-            (self.urls.get('first_tag'), HTTPStatus.OK, self.client),
-            (self.urls.get('second_tag'), HTTPStatus.NOT_FOUND, self.client),
+            (self.urls.get('tag'), HTTPStatus.OK, self.client),
+            (self.urls.get('unknown_tag'), HTTPStatus.NOT_FOUND, self.client),
             (self.urls.get('ingredients'), HTTPStatus.OK, self.client),
-            (self.urls.get('first_ingredient'), HTTPStatus.OK, self.client),
+            (self.urls.get('ingredient'), HTTPStatus.OK, self.client),
             (
-                self.urls.get('second_ingredient'),
+                self.urls.get('unknown_ingredient'),
                 HTTPStatus.NOT_FOUND,
                 self.client,
             ),
             (self.urls.get('recipes'), HTTPStatus.OK, self.client),
-            (self.urls.get('first_recipe'), HTTPStatus.OK, self.client),
+            (self.urls.get('recipe'), HTTPStatus.OK, self.client),
             (
-                self.urls.get('second_recipe'),
+                self.urls.get('unknown_recipe'),
                 HTTPStatus.NOT_FOUND,
                 self.client,
             ),
+            (self.urls.get('download'), HTTPStatus.OK, self.author_user),
+            (
+                self.urls.get('download'),
+                HTTPStatus.UNAUTHORIZED,
+                self.client,
+            ),
         )
-        for url, status, user in url_status_user:
+        for url, status, user in urls_statuses_users:
             with self.subTest(
                 url=url,
                 status=status,
-                user=get_user(user).username,
+                user=user,
             ):
                 self.assertEqual(user.get(url).status_code, status)
 
     def test_http_statuses_post_request(self) -> None:
         """URL-адрес возвращает соответствующий статус при POST запросах."""
-        url_status_user_data = (
+        urls_statuses_users_data = (
             (
                 self.urls.get('recipes'),
                 HTTPStatus.CREATED,
@@ -93,27 +125,192 @@ class RecipesUrlsTests(TestCase):
                 {
                     'tags': [self.tag.id],
                     'ingredients': [
-                        {'id': self.ingredient.id, 'amount': 10},
+                        {'id': self.ingredient.id, 'amount': self.amount},
                     ],
-                    'image': (
-                        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAA'
-                        'ABAgMAAABieywaAAAACVBMVEUAAAD///9fX1/S0ecCAAAACXBIWX'
-                        'MAAA7EAAAOxAGVKw4bAAAACklEQVQImWNoAAAAggCByxOyYQAAAA'
-                        'BJRU5ErkJggg=='
-                    ),
-                    'name': 'Тестовый рецепт',
-                    'text': 'Описание',
-                    'cooking_time': 15,
+                    'image': self.image,
+                    'name': self.name,
+                    'text': self.text,
+                    'cooking_time': self.cooking_time,
                 },
             ),
+            (
+                self.urls.get('shoping_cart'),
+                HTTPStatus.CREATED,
+                self.authorized_user,
+                {},
+            ),
+            (
+                self.urls.get('shoping_cart'),
+                HTTPStatus.BAD_REQUEST,
+                self.authorized_user,
+                {},
+            ),
+            (
+                self.urls.get('shoping_cart'),
+                HTTPStatus.UNAUTHORIZED,
+                self.client,
+                {},
+            ),
+            (
+                self.urls.get('favorite'),
+                HTTPStatus.CREATED,
+                self.authorized_user,
+                {},
+            ),
+            (
+                self.urls.get('favorite'),
+                HTTPStatus.BAD_REQUEST,
+                self.authorized_user,
+                {},
+            ),
+            (
+                self.urls.get('favorite'),
+                HTTPStatus.UNAUTHORIZED,
+                self.client,
+                {},
+            ),
         )
-        for url, status, user, data in url_status_user_data:
+        for url, status, user, data in urls_statuses_users_data:
             with self.subTest(
                 url=url,
                 status=status,
-                user=get_user(user).username,
+                user=user,
             ):
                 self.assertEqual(
                     user.post(url, data=data, format='json').status_code,
+                    status,
+                )
+
+    def test_http_statuses_patch_request(self) -> None:
+        """URL-адрес возвращает соответствующий статус при PATCH запросах."""
+        urls_statuses_users_data = (
+            (
+                self.urls.get('recipe'),
+                HTTPStatus.OK,
+                self.author_user,
+                {
+                    'tags': [self.tag.id],
+                    'ingredients': [
+                        {'id': self.ingredient.id, 'amount': self.amount},
+                    ],
+                    'image': self.image,
+                    'name': self.updated_name,
+                    'text': self.updated_text,
+                    'cooking_time': self.cooking_time,
+                },
+            ),
+            (
+                self.urls.get('recipe'),
+                HTTPStatus.BAD_REQUEST,
+                self.author_user,
+                {
+                    'tagsss': [self.tag.id],
+                    'ingredientsss': [
+                        {'id': self.ingredient.id, 'amount': self.amount},
+                    ],
+                    'image': self.image,
+                    'name': self.updated_name,
+                    'text': self.updated_text,
+                    'cooking_time': self.cooking_time,
+                },
+            ),
+            (
+                self.urls.get('recipe'),
+                HTTPStatus.BAD_REQUEST,
+                self.author_user,
+                {},
+            ),
+            (
+                self.urls.get('recipe'),
+                HTTPStatus.UNAUTHORIZED,
+                self.client,
+                {},
+            ),
+            (
+                self.urls.get('recipe'),
+                HTTPStatus.FORBIDDEN,
+                self.authorized_user,
+                {},
+            ),
+            (
+                self.urls.get('unknown_recipe'),
+                HTTPStatus.NOT_FOUND,
+                self.authorized_user,
+                {},
+            ),
+        )
+        for url, status, user, data in urls_statuses_users_data:
+            with self.subTest(
+                url=url,
+                status=status,
+                user=user,
+            ):
+                self.assertEqual(
+                    user.patch(url, data=data, format='json').status_code,
+                    status,
+                )
+
+    def test_http_statuses_delete_request(self) -> None:
+        """URL-адрес возвращает соответствующий статус при DELETE запросах."""
+        urls_statuses_users = (
+            (
+                self.urls.get('shoping_cart'),
+                HTTPStatus.UNAUTHORIZED,
+                self.client,
+            ),
+            (
+                self.urls.get('shoping_cart'),
+                HTTPStatus.NO_CONTENT,
+                self.author_user,
+            ),
+            (
+                self.urls.get('shoping_cart'),
+                HTTPStatus.BAD_REQUEST,
+                self.author_user,
+            ),
+            (
+                self.urls.get('favorite'),
+                HTTPStatus.UNAUTHORIZED,
+                self.client,
+            ),
+            (
+                self.urls.get('favorite'),
+                HTTPStatus.NO_CONTENT,
+                self.author_user,
+            ),
+            (
+                self.urls.get('favorite'),
+                HTTPStatus.BAD_REQUEST,
+                self.author_user,
+            ),
+            (
+                self.urls.get('recipe'),
+                HTTPStatus.UNAUTHORIZED,
+                self.client,
+            ),
+            (
+                self.urls.get('recipe'),
+                HTTPStatus.FORBIDDEN,
+                self.authorized_user,
+            ),
+            (
+                self.urls.get('recipe'),
+                HTTPStatus.NO_CONTENT,
+                self.author_user,
+            ),
+            (
+                self.urls.get('recipe'),
+                HTTPStatus.NOT_FOUND,
+                self.author_user,
+            ),
+        )
+        for url, status, user in urls_statuses_users:
+            with self.subTest(
+                url=url,
+                status=status,
+                user=user,
+            ):
+                self.assertEqual(
+                    user.delete(url).status_code,
                     status,
                 )

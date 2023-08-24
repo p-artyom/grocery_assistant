@@ -111,6 +111,23 @@ class RecipeSerializer(serializers.ModelSerializer):
         return recipe
 
     def update(self, instance, validated_data):
+        instance.name = validated_data.get(
+            'name',
+            instance.name,
+        )
+        instance.image = validated_data.get('image', instance.image)
+        instance.text = validated_data.get('text', instance.text)
+        instance.cooking_time = validated_data.get(
+            'cooking_time',
+            instance.cooking_time,
+        )
+        errors = []
+        if 'tags' not in validated_data:
+            errors.append('Поле tags обязательно для заполнения.')
+        if 'ingredients' not in validated_data:
+            errors.append('Поле ingredients обязательно для заполнения.')
+        if errors:
+            raise serializers.ValidationError(errors)
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredients')
         instance.ingredients.clear()
