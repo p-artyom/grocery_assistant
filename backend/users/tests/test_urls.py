@@ -10,13 +10,12 @@ from users.models import User
 class UsersUrlsTests(TestCase):
     @classmethod
     def setUpTestData(cls) -> None:
-        # cls.user, cls.author = mixer.cycle(2).blend(User)
-        # cls.user = mixer.blend('users.User')
         cls.author = mixer.blend('users.User')
 
-        cls.recipe = mixer.blend('users.Subscribe', user=cls.author)
+        cls.subscribe = mixer.blend('users.Subscribe', user=cls.author)
 
         cls.email = 'guido@mail.ru'
+        cls.unknown_email = 'rossum@mail.ru'
         cls.username = 'guido'
         cls.first_name = 'Гвидо ван'
         cls.last_name = 'Россум'
@@ -30,7 +29,6 @@ class UsersUrlsTests(TestCase):
         cls.authorized_user = APIClient()
         cls.author_user = APIClient()
 
-        # cls.authorized_user.force_authenticate(user=cls.user)
         cls.author_user.force_authenticate(cls.author)
 
         cls.urls = {
@@ -87,151 +85,168 @@ class UsersUrlsTests(TestCase):
             ):
                 self.assertEqual(user.get(url).status_code, status)
 
-    def test_http_statuses_post_request(self) -> None:
-        """URL-адрес возвращает соответствующий статус при POST запросах."""
-        data = {
-            'email': self.email,
-            'username': self.username,
-            'first_name': self.first_name,
-            'last_name': self.last_name,
-            'password': self.password,
-        }
-        self.assertEqual(
-            self.client.post(
+    def test_http_statuses_post_delete_request(self) -> None:
+        """
+        URL-адрес возвращает соответствующий статус
+        при POST и DELETE запросах.
+        """
+        urls_statuses_users_data = (
+            (
                 self.urls.get('users'),
-                data=data,
-                format='json',
-            ).status_code,
-            HTTPStatus.CREATED,
-        )
-        data = {
-            'email': self.email,
-            'usernameee': self.username,
-            'first_nameeee': self.first_name,
-            'last_name': self.last_name,
-            'password': self.password,
-        }
-        self.assertEqual(
-            self.client.post(
+                HTTPStatus.CREATED,
+                self.client,
+                {
+                    'email': self.email,
+                    'username': self.username,
+                    'first_name': self.first_name,
+                    'last_name': self.last_name,
+                    'password': self.password,
+                },
+            ),
+            (
                 self.urls.get('users'),
-                data=data,
-                format='json',
-            ).status_code,
-            HTTPStatus.BAD_REQUEST,
-        )
-        data = {
-            'email': self.email,
-            'password': self.password,
-        }
-        self.assertEqual(
-            self.client.post(
+                HTTPStatus.BAD_REQUEST,
+                self.client,
+                {
+                    'email': self.email,
+                    'usernameee': self.username,
+                    'first_nameeee': self.first_name,
+                    'last_name': self.last_name,
+                    'password': self.password,
+                },
+            ),
+            (
                 self.urls.get('login'),
-                data=data,
-                format='json',
-            ).status_code,
-            HTTPStatus.OK,
+                HTTPStatus.OK,
+                self.client,
+                {
+                    'email': self.email,
+                    'password': self.password,
+                },
+            ),
+            (
+                self.urls.get('login'),
+                HTTPStatus.BAD_REQUEST,
+                self.client,
+                {
+                    'email': self.unknown_email,
+                    'password': self.password,
+                },
+            ),
         )
+        for url, status, user, data in urls_statuses_users_data:
+            with self.subTest(
+                url=url,
+                status=status,
+                user=user,
+            ):
+                self.assertEqual(
+                    user.post(url, data=data, format='json').status_code,
+                    status,
+                )
         user = User.objects.get(username=self.username)
         self.authorized_user.force_authenticate(user=user)
-        data = {
-            'new_password': self.new_password,
-            'current_password': self.password,
-        }
-        self.assertEqual(
-            self.authorized_user.post(
+        urls_statuses_users_data = (
+            (
                 self.urls.get('password'),
-                data=data,
-                format='json',
-            ).status_code,
-            HTTPStatus.NO_CONTENT,
-        )
-        data = {
-            'new_passworddd': self.new_password,
-            'current_passworddd': self.password,
-        }
-        self.assertEqual(
-            self.authorized_user.post(
+                HTTPStatus.NO_CONTENT,
+                self.authorized_user,
+                {
+                    'new_password': self.new_password,
+                    'current_password': self.password,
+                },
+            ),
+            (
                 self.urls.get('password'),
-                data=data,
-                format='json',
-            ).status_code,
-            HTTPStatus.BAD_REQUEST,
-        )
-        self.assertEqual(
-            self.client.post(
+                HTTPStatus.BAD_REQUEST,
+                self.authorized_user,
+                {
+                    'new_passworddd': self.new_password,
+                    'current_passworddd': self.password,
+                },
+            ),
+            (
                 self.urls.get('password'),
-                format='json',
-            ).status_code,
-            HTTPStatus.UNAUTHORIZED,
-        )
-        self.assertEqual(
-            self.authorized_user.post(
+                HTTPStatus.UNAUTHORIZED,
+                self.client,
+                {},
+            ),
+            (
                 self.urls.get('logout'),
-                data=data,
-                format='json',
-            ).status_code,
-            HTTPStatus.NO_CONTENT,
-        )
-        self.assertEqual(
-            self.client.post(
+                HTTPStatus.NO_CONTENT,
+                self.authorized_user,
+                {},
+            ),
+            (
                 self.urls.get('logout'),
-                format='json',
-            ).status_code,
-            HTTPStatus.UNAUTHORIZED,
-        )
-        self.assertEqual(
-            self.authorized_user.post(
+                HTTPStatus.UNAUTHORIZED,
+                self.client,
+                {},
+            ),
+            (
                 self.urls.get('subscribe'),
-                format='json',
-            ).status_code,
-            HTTPStatus.CREATED,
-        )
-        self.assertEqual(
-            self.authorized_user.post(
+                HTTPStatus.CREATED,
+                self.authorized_user,
+                {},
+            ),
+            (
                 f'/api/users/{user.id}/subscribe/',
-                format='json',
-            ).status_code,
-            HTTPStatus.BAD_REQUEST,
-        )
-        self.assertEqual(
-            self.client.post(
+                HTTPStatus.BAD_REQUEST,
+                self.authorized_user,
+                {},
+            ),
+            (
                 self.urls.get('subscribe'),
-                format='json',
-            ).status_code,
-            HTTPStatus.UNAUTHORIZED,
-        )
-        self.assertEqual(
-            self.authorized_user.post(
+                HTTPStatus.UNAUTHORIZED,
+                self.client,
+                {},
+            ),
+            (
                 self.urls.get('unknown_subscribe'),
-                format='json',
-            ).status_code,
-            HTTPStatus.NOT_FOUND,
+                HTTPStatus.NOT_FOUND,
+                self.authorized_user,
+                {},
+            ),
         )
-        self.assertEqual(
-            self.authorized_user.delete(
+        for url, status, user, data in urls_statuses_users_data:
+            with self.subTest(
+                url=url,
+                status=status,
+                user=user,
+            ):
+                self.assertEqual(
+                    user.post(url, data=data, format='json').status_code,
+                    status,
+                )
+        urls_statuses_users = (
+            (
                 self.urls.get('subscribe'),
-                format='json',
-            ).status_code,
-            HTTPStatus.NO_CONTENT,
-        )
-        self.assertEqual(
-            self.authorized_user.delete(
+                HTTPStatus.NO_CONTENT,
+                self.authorized_user,
+            ),
+            (
                 self.urls.get('subscribe'),
-                format='json',
-            ).status_code,
-            HTTPStatus.BAD_REQUEST,
-        )
-        self.assertEqual(
-            self.client.delete(
+                HTTPStatus.BAD_REQUEST,
+                self.authorized_user,
+            ),
+            (
                 self.urls.get('subscribe'),
-                format='json',
-            ).status_code,
-            HTTPStatus.UNAUTHORIZED,
-        )
-        self.assertEqual(
-            self.authorized_user.delete(
+                HTTPStatus.UNAUTHORIZED,
+                self.client,
+            ),
+            (
                 self.urls.get('unknown_subscribe'),
-                format='json',
-            ).status_code,
-            HTTPStatus.NOT_FOUND,
+                HTTPStatus.NOT_FOUND,
+                self.authorized_user,
+            ),
         )
+        for url, status, user in urls_statuses_users:
+            with self.subTest(
+                url=url,
+                status=status,
+                user=user,
+            ):
+                self.assertEqual(
+                    user.delete(url, format='json').status_code,
+                    status,
+                )

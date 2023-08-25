@@ -12,7 +12,7 @@ services:
     volumes:
       - pg_data:/var/lib/postgresql/data
   backend:
-    build: ./backend/
+    image: partyom/foodgram_backend
     env_file: .env
     depends_on:
       - postgres
@@ -20,13 +20,13 @@ services:
       - static:/backend_static
       - media:/app/media
   frontend:
-    build: ./frontend/
+    image: partyom/foodgram_frontend
     env_file: .env
     command: cp -r /app/result_build/. /frontend_static/
     volumes:
       - static:/frontend_static
   nginx:
-    build: ./nginx/
+    image: partyom/foodgram_nginx
     env_file: .env
     ports:
       - 9000:80
