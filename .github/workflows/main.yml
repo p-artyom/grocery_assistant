@@ -39,7 +39,7 @@ jobs:
           POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          DB_HOST: 127.0.0.1
+          DB_HOST: postgres
           DB_PORT: 5432
           SECRET_KEY: some-test-key-not-good-for-prod
           DEBUG: True
