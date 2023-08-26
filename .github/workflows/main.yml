@@ -39,7 +39,7 @@ jobs:
           POSTGRES_DB: postgres
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          DB_HOST: localhost
+          DB_NAME: localhost
           DB_PORT: 5432
           SECRET_KEY: some-test-key-not-good-for-prod
           DEBUG: True
@@ -47,7 +47,7 @@ jobs:
         run: |
           cd backend/
           python -m flake8 .
-          pythom manage.py migrate
+          python manage.py migrate
           python manage.py test
 
   build_backend_and_push_to_docker_hub:
