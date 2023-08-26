@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:13
+        image: postgres:13.10
         env:
           POSTGRES_DB: postgres
           POSTGRES_USER: postgres
@@ -46,8 +46,9 @@ jobs:
           ALLOWED_HOSTS: 127.0.0.1 localhost
         run: |
           cd backend/
-          python manage.py migrate
           python -m flake8 .
+          python manage.py migrate
+          python manage.py test
 
   build_backend_and_push_to_docker_hub:
     name: Push backend Docker image to DockerHub
