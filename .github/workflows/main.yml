@@ -39,7 +39,7 @@ jobs:
           POSTGRES_DB: django_db
           POSTGRES_USER: django_user
           POSTGRES_PASSWORD: django_password
-          DB_HOST: 127.0.0.1
+          DB_HOST: localhost
           DB_PORT: 5432
           SECRET_KEY: some-test-key-not-good-for-prod
           DEBUG: True
