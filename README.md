@@ -2,7 +2,7 @@
 
 - IP: 158.160.15.128;
 - name_foodgram: https://partyoms.sytes.net/; 
-- login: yc-user; 
+- login: yc-user@mail.ru; 
 - password: yc-user123456789.
 
 ## Описание
