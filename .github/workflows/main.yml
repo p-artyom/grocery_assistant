@@ -14,8 +14,8 @@ jobs:
         image: postgres:13
         env:
           POSTGRES_DB: postgres
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres_user
+          POSTGRES_PASSWORD: postgres_password
         ports:
           - 5432:5432
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
@@ -37,8 +37,8 @@ jobs:
       - name: Test with flake8 and django tests
         env:
           POSTGRES_DB: postgres
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres_user
+          POSTGRES_PASSWORD: postgres_password
           DB_NAME: localhost
           DB_PORT: 5432
           SECRET_KEY: some-test-key-not-good-for-prod
@@ -154,7 +154,6 @@ jobs:
             sudo docker compose -f docker-compose.production.yml down
             sudo docker compose -f docker-compose.production.yml up -d
             sudo docker compose -f docker-compose.production.yml exec backend python manage.py migrate
-            sudo docker compose -f docker-compose.production.yml exec backend python manage.py importcsv
             sudo docker compose -f docker-compose.production.yml exec backend python manage.py collectstatic
             sudo docker compose -f docker-compose.production.yml exec backend cp -r /app/collected_static/. /backend_static/static/
 
