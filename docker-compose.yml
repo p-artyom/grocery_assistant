@@ -33,3 +33,4 @@ services:
     volumes:
       - static:/static
       - media:/app/media
+      - ./docs/:/static/api/docs/
