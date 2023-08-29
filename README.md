@@ -1,7 +1,6 @@
 # Продуктовый помощник
 
-- IP: 158.160.15.128;
-- name_foodgram: https://partyoms.sytes.net/; 
+- website: https://partyoms.sytes.net/; 
 - login: yc-user@mail.ru; 
 - password: yc-user123456789.
 
