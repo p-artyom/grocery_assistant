@@ -4,7 +4,6 @@ from operator import or_
 
 from django.db.models import Q, Sum
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, status
 from rest_framework.decorators import action
@@ -18,12 +17,12 @@ from api.mixins import CRUDAPIView, ListRetrieveAPIView
 from api.permissions import AuthorCanEditAndDelete
 from api.serializers import (
     IngredientSerializer,
-    RecipeInActionSerializer,
     RecipeReadOnlySerializer,
     RecipeSerializer,
     TagSerializer,
 )
 from core.paginations import LimitPagination
+from core.utils import add_delete_object
 from recipes.models import (
     Favorite,
     Ingredient,
@@ -100,58 +99,14 @@ class RecipeAPIView(CRUDAPIView):
         detail=True,
     )
     def favorite(self, request, pk):
-        user = request.user
-        recipe = get_object_or_404(Recipe, id=pk)
-        favorite = Favorite.objects.filter(user=user, recipe=recipe)
-        if request.method == 'POST':
-            if favorite.exists():
-                return Response(
-                    {'error': 'Рецепт уже добавлен в избранное!'},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-            serializer = RecipeInActionSerializer(
-                recipe,
-                context={'request': request},
-            ).data
-            Favorite.objects.create(user=user, recipe=recipe)
-            return Response(serializer, status=status.HTTP_201_CREATED)
-        if request.method == 'DELETE':
-            if favorite.exists():
-                favorite.delete()
-                return Response(status=status.HTTP_204_NO_CONTENT)
-            return Response(
-                {'error': 'Рецепт ещё не добавляли в избранное!'},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        return add_delete_object(request, pk, Favorite, 'избранное')
 
     @action(
         methods=('POST', 'DELETE'),
         detail=True,
     )
     def shopping_cart(self, request, pk):
-        user = request.user
-        recipe = get_object_or_404(Recipe, id=pk)
-        shopping_cart = ShoppingCart.objects.filter(user=user, recipe=recipe)
-        if request.method == 'POST':
-            if shopping_cart.exists():
-                return Response(
-                    {'error': 'Рецепт уже добавлен в список покупок!'},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-            serializer = RecipeInActionSerializer(
-                recipe,
-                context={'request': request},
-            ).data
-            ShoppingCart.objects.create(user=user, recipe=recipe)
-            return Response(serializer, status=status.HTTP_201_CREATED)
-        if request.method == 'DELETE':
-            if shopping_cart.exists():
-                shopping_cart.delete()
-                return Response(status=status.HTTP_204_NO_CONTENT)
-            return Response(
-                {'error': 'Рецепт ещё не добавляли в список покупок!'},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        return add_delete_object(request, pk, ShoppingCart, 'список покупок')
 
     @action(
         methods=('GET',),

@@ -5,7 +5,6 @@ from django.conf import settings
 from django.test import TestCase, override_settings
 from mixer.backend.django import mixer
 
-from core.utils import cut_string
 from recipes.models import (
     Favorite,
     Ingredient,
@@ -14,6 +13,7 @@ from recipes.models import (
     ShoppingCart,
     Tag,
 )
+from recipes.utils import cut_string
 
 TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
 

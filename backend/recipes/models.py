@@ -3,7 +3,7 @@ from django.core.validators import MinValueValidator
 from django.db import models
 
 from core.models import NameModel
-from core.utils import cut_string
+from recipes.utils import cut_string
 from users.models import User
 
 
@@ -142,6 +142,12 @@ class Favorite(models.Model):
     class Meta:
         verbose_name = 'избранное'
         verbose_name_plural = 'избранное'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'recipe'],
+                name='unique_favorites',
+            ),
+        ]
 
     def __str__(self) -> str:
         return f'`{self.user}` добавил в избранное `{self.recipe}`'
@@ -165,6 +171,12 @@ class ShoppingCart(models.Model):
     class Meta:
         verbose_name = 'список покупок'
         verbose_name_plural = 'список покупок'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'recipe'],
+                name='unique_shopping_cart',
+            ),
+        ]
 
     def __str__(self) -> str:
         return f'`{self.user}` добавил в список покупок `{self.recipe}`'

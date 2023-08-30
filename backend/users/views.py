@@ -41,14 +41,13 @@ class SpecialUserViewSet(UserViewSet):
             ).data
             Subscribe.objects.create(user=user, following=following)
             return Response(serializer, status=status.HTTP_201_CREATED)
-        if request.method == 'DELETE':
-            if subscribe.exists():
-                subscribe.delete()
-                return Response(status=status.HTTP_204_NO_CONTENT)
-            return Response(
-                {'error': 'Вы не подписаны на этого автора!'},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        if subscribe.exists():
+            subscribe.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            {'error': 'Вы не подписаны на этого автора!'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
     @action(detail=False, permission_classes=(IsAuthenticated,))
     def subscriptions(self, request):

@@ -7,10 +7,9 @@ from recipes.models import Ingredient, Tag
 
 
 class Command(BaseCommand):
-    help = 'Выполнить импорт данных из csv файла'
+    help = 'Выполнить импорт данных из csv файлов'
 
     def handle(self, *args, **options):
-        del args, options
         file_path = settings.BASE_DIR / 'static' / 'data'
         with open(file_path / 'tags.csv', encoding='utf-8') as csv_file:
             reader_object = csv.reader(csv_file)

@@ -45,7 +45,6 @@ class SubscribeSerializer(SpecialUserSerializer):
         )
 
     def get_is_subscribed(self, object):
-        del object
         return True
 
     def get_recipes(self, object):
