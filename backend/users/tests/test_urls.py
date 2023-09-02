@@ -86,9 +86,10 @@ class UsersUrlsTests(TestCase):
                 self.assertEqual(user.get(url).status_code, status)
 
     def test_http_statuses_post_delete_request(self) -> None:
-        """
-        URL-адрес возвращает соответствующий статус
-        при POST и DELETE запросах.
+        """URL-адрес возвращает корректный статус.
+
+        Статус, возвращаемый при POST и DELETE запросах на URL-адреса,
+        соответствует документации.
         """
         urls_statuses_users_data = (
             (
@@ -247,6 +248,6 @@ class UsersUrlsTests(TestCase):
                 user=user,
             ):
                 self.assertEqual(
-                    user.delete(url, format='json').status_code,
+                    user.delete(url).status_code,
                     status,
                 )

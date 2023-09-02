@@ -5,6 +5,14 @@ from dotenv import load_dotenv
 
 STR_LENGTH_WHEN_PRINTING_MODEL = 15
 
+NUM_OBJECTS_ON_PAGE = 6
+
+NUM_OBJECTS_ON_LAST_PAGE_FOR_TEST = 2
+
+CHECK_ZERO_OBJECTS_FOR_TEST = 0
+
+CHECK_ONE_OBJECT_FOR_TEST = 1
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 DOTENV_PATH = BASE_DIR / 'foodgram' / '.env'
@@ -71,21 +79,14 @@ WSGI_APPLICATION = 'foodgram.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': str(BASE_DIR / 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('POSTGRES_DB', 'django_db'),
+        'USER': os.getenv('POSTGRES_USER', 'django_user'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'django_password'),
+        'HOST': os.getenv('DB_NAME', 'localhost'),
+        'PORT': os.getenv('DB_PORT', 5432),
     },
 }
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': os.getenv('POSTGRES_DB', 'django_db'),
-#         'USER': os.getenv('POSTGRES_USER', 'django_user'),
-#         'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'django_password'),
-#         'HOST': os.getenv('DB_NAME', 'localhost'),
-#         'PORT': os.getenv('DB_PORT', 5432),
-#     },
-# }
 
 AUTH_PASSWORD_VALIDATORS = [
     {
