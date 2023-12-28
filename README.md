@@ -81,7 +81,7 @@ sudo systemctl reload nginx
 - В корне проекта создайте директорию `.github/workflows`, а в ней - файл
 `main.yml`;
 
-- Скопируйте содержимое файла `foodgram_workflows` в `main.yml`;
+- Скопируйте содержимое файла `foodgram_workflows.yml` в `main.yml`;
 
 - В файле `main.yml` в строках `75, 98, 121` замените `<your_login>` на свой
 логин в _DockerHub_;
